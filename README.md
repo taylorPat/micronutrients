@@ -1,6 +1,6 @@
 # Micronutrients 🥦📊🧬
 
-Micronutrients is a containerized **Python** backend project focused on **relational database design** and **REST API** development.
+Micronutrients is a containerized **Python** backend project focused on **relational database design** and **REST API** development for persisting, manipulating and retrieving information about micronutrients.
 
 The database is designed using an **Entity-Relationship Model (ERM)**, transformed into a relational data model, and implemented as a physical **PostgreSQL** schema.  
 The backend is built with **FastAPI**, with **SQLAlchemy** providing the ORM and database access layer and **Alembic** handling version-controlled schema migrations.  
