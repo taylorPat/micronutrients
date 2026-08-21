@@ -1,4 +1,4 @@
-# Micronutrients
+# Micronutrients 🥦📊🧬
 
 Micronutrients is a containerized **Python** backend project focused on **relational database design** and **REST API** development.
 
