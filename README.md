@@ -31,10 +31,10 @@ Symptom(<u>id</u>, name, category)
 
 #### Optimized
 
-~~foodhasCategory(<u>↑ foodId</u>, foodCategoryId)~~  
-foodCategory(<u>id</u>, name, description)  
-ConsistsOf(<u>↑ foodId</u>, <u>↑ micronutrientId</u>, amount, unit, per_quantity)  
-Food(<u>id</u>, name, description, ↑ foodCategoryId) _<- Added foodCategoryId_  
+~~FoodHasCategory(<u>↑ foodId</u>, foodCategoryId)~~  
+FoodCategory(<u>id</u>, name, description)  
+ConsistsOf(<u>↑ foodId</u>, <u>↑ micronutrientId</u>, amount, unit, per*quantity)  
+Food(<u>id</u>, name, description, ↑ foodCategoryId) *<- Added foodCategoryId\_  
 Vitamin(<u>↑ micronutrient_id</u>, group, fat_soluble)  
 NutrientImproveSymptom(<u>↑ micronutrientId</u>, <u>↑ symptomId</u>)  
 Micronutrient(<u>id</u>, name, recommended_daily_amount, unit)  
