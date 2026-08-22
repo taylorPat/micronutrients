@@ -15,3 +15,27 @@ The backend is built with **FastAPI**, with **SQLAlchemy** providing the ORM and
 > The original drawio file can be found inside [./assets/data_modelling/micro_nutrition_erm.drawio](./assets/data_modelling/micro_nutrition_erm.drawio)
 
 ![Entity-Relation-Modell](./assets/data_modelling/micro_nutrition_erm.drawio.svg)
+
+### Relation Modell
+
+#### Unoptimized
+
+FoodHasCategory(<u>↑ foodId</u>, foodCategoryId)  
+FoodCategory(<u>id</u>, name, description)  
+FoodConsistsOfNutrient(<u>↑ foodId</u>, <u>↑ micronutrientId</u>, amount, unit, per_quantity)  
+Food(<u>id</u>, name, description)  
+Vitamin(<u>↑ micronutrientId</u>, group, fat_soluble)  
+NutrientImproveSymptom(<u>↑ micronutrientId</u>, <u>↑ symptomId</u>)  
+Micronutrient(<u>id</u>, name, recommended_daily_amount, unit)  
+Symptom(<u>id</u>, name, category)
+
+#### Optimized
+
+~~foodhasCategory(<u>↑ foodId</u>, foodCategoryId)~~  
+foodCategory(<u>id</u>, name, description)  
+ConsistsOf(<u>↑ foodId</u>, <u>↑ micronutrientId</u>, amount, unit, per_quantity)  
+Food(<u>id</u>, name, description, ↑ foodCategoryId) _<- Added foodCategoryId_  
+Vitamin(<u>↑ micronutrient_id</u>, group, fat_soluble)  
+NutrientImproveSymptom(<u>↑ micronutrientId</u>, <u>↑ symptomId</u>)  
+Micronutrient(<u>id</u>, name, recommended_daily_amount, unit)  
+Symptom(<u>id</u>, name, category)
