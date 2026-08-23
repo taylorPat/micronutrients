@@ -1,0 +1,16 @@
+[project]
+name = "micronutrients"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16.4",
+]
+migration = [
+    "alembic>=1.19.1",
+    "psycopg[binary]>=3.3.4",
+]
