@@ -129,3 +129,83 @@ CREATE TABLE food_consists_of_nutrient (
     CHECK (food_amount > 0)
 );
 ```
+
+## Docker environment
+
+### PostgreSQL
+
+We use docker / docker-compose to set up the PostgreSQL database. The container runs with the latest `postgres:18.6` version.
+
+> [!NOTE]
+> For interacting with the database in the beginning we use [`adminer`](https://www.adminer.org/de/) as postgres client. The reason for this is that is also used on the offical postgres docker documentation. As alternative we could have also used [`pgadmin`](https://www.pgadmin.org/).
+
+> [!NOTE]
+> How to find the name of the network? Per default it is called `<Docker-compose-projectname>_default`:
+>
+> - `docker network ls`
+> - `docker compose config` shows the optimized docker-compose.yml file.
+> - `docker inspect postgres` search for `networks`
+
+> [!NOTE]
+> Use a _Named Volume_ instead of a _Bind mount_. When using _Named Volume_:
+>
+> - Docker cares about the persisting
+> - less issues with windows / linux file permissions
+> - No dependency on specific file paths
+
+<details>
+<summary>Here is the docker compose file optimized by the docker engine</summary>
+```yaml
+name: micronutrients
+services:
+  adminer:
+    container_name: dbclient
+    depends_on:
+      db:
+        condition: service_healthy
+        required: true
+    image: adminer
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 8080
+        published: "8080"
+        protocol: tcp
+    restart: unless-stopped
+  db:
+    container_name: postgresdb
+    environment:
+      POSTGRES_DB: pdb
+      POSTGRES_PASSWORD: pw
+      POSTGRES_USER: user
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U user -d pdb
+      timeout: 5s
+      interval: 10s
+      retries: 5
+      start_period: 30s
+    image: postgres:18.6
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 5432
+        published: "5432"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: pg_data
+        target: /var/lib/postgresql/data
+        volume: {}
+networks:
+  default:
+    name: micronutrients_default
+volumes:
+  pg_data:
+    name: micronutrients_pg_data
+```
+</details>
