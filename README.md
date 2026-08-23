@@ -155,3 +155,67 @@ We use docker / docker-compose to set up the PostgreSQL database. The container 
 
 > [!NOTE]
 > The docker compose file can be checked [here](docker-compose.yml) or inside the src directory via `docker compose config`.
+
+### Data schema migration
+
+#### Local environment
+
+```sh
+pip install --upgrade uv
+
+uv init
+
+uv add --group migration alembic
+uv add --group migration psycopg[binary]
+
+uv run alembic init migrations
+```
+
+Inside _alembic.ini_ set `sqlalchemy.url=`. Set the database URL as environment variable. Inside _env.py_ import the environment variable and asign it to `config.set_main_option("sqlalchemy.url", database_url)`.
+
+> [!IMPORTANT]
+> When you run locally in a virtual environment and your postgres instance is running inside a container the container has to expose the port and inside the `sqlalchemy.url=` you define `...@localhost:<PORT>/<DATABASE>`.
+
+```sh
+# Create first revision
+uv run alembic revision -m "create symptom_category enum type"
+```
+
+Define the revision with `upgrade` and `downgrade` functionalities. In this case we define an Enum type for the symptom category and we drop it in case of an rollback.
+
+```sh
+# Apply revision
+uv run alembic upgrade head
+```
+
+#### Pack it into a container with docker run
+
+Create following Dockerfile.
+
+```Dockerfile
+FROM python:3.13-alpine AS migration
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+WORKDIR /app
+
+COPY pyproject.toml .
+COPY uv.lock .
+
+RUN uv sync --frozen --group migration
+
+COPY migrations migrations
+COPY alembic.ini .
+
+ENTRYPOINT ["uv", "run", "alembic"]
+# ENTRYPOINT cannot be overwritten but you can extend
+CMD ["upgrade", "head"]
+# CMD will be completely overwritten (in this case CMD is like a default value)
+```
+
+```sh
+# Build image
+docker build -t migration-img .
+
+# Run container
+docker run --rm --name migration -e DATABASE_URL="postgresql+psycopg://user:pw@postgresdb:5432/pdb" --network micronutrients_default migration-img
+```
