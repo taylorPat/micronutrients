@@ -1,4 +1,6 @@
-# Micronutrients 🥦📊🧬
+TODO: Write down all migration files with alembic and apply
+
+# [IN PROGRESS] Micronutrients 🥦📊🧬
 
 Micronutrients is a containerized **Python** backend project focused on **relational database design** and **REST API** development for persisting, manipulating and retrieving information about micronutrients.
 
