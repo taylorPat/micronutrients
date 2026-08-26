@@ -181,7 +181,7 @@ Inside _alembic.ini_ set `sqlalchemy.url=`. Set the database URL as environment 
 uv run alembic revision -m "create symptom_category enum type"
 ```
 
-Define the revision with `upgrade` and `downgrade` functionalities. In this case we define an Enum type for the symptom category and we drop it in case of an rollback.
+Define the revision with `upgrade` and `downgrade` functionalities. In this case we define an Enum type for the symptom category and we drop it in case of a rollback.
 
 ```sh
 # Apply revision
@@ -217,5 +217,6 @@ CMD ["upgrade", "head"]
 docker build -t migration-img .
 
 # Run container
+# micronutrients_default is the network which is created automatically by docker-compose when environment is started
 docker run --rm --name migration -e DATABASE_URL="postgresql+psycopg://user:pw@postgresdb:5432/pdb" --network micronutrients_default migration-img
 ```
