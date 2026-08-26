@@ -161,7 +161,7 @@ docker run --name admini -d --rm --network net_tes -p 8080:8080 adminer
 
 #### Connect services without network
 
-```
+```sh
 # Start postgres container and export port 5433
 docker run --name db_tes -e POSTGRES_PASSWORD=pw -d --rm -p 5433:5432 postgres:18.6
 # Start adminer and expose port 8080 to interact with UI from outside the container
@@ -178,3 +178,81 @@ docker run --name admini -d --rm -p 8080:8080 adminer
 
 > [!NOTE]
 > The docker compose file can be checked [here](docker-compose.yml) or inside the src directory via `docker compose config`.
+
+### Data schema migration
+
+#### Local environment
+
+```sh
+pip install --upgrade uv
+
+uv init
+
+uv add --group migration alembic
+uv add --group migration psycopg[binary]
+
+uv run alembic init migrations
+```
+
+Inside _alembic.ini_ set `sqlalchemy.url=`. Set the database URL as environment variable. Inside _env.py_ import the environment variable and asign it to `config.set_main_option("sqlalchemy.url", database_url)`.
+
+> [!IMPORTANT]
+> When you run the migration scripts in a virtual environment locally and your postgres instance is running inside a container, the container has to expose the port. The `sqlalchemy.url=` is then defined by `...@localhost:<PORT>/<DATABASE>`.
+> When you run the migration script in a container and in the same network as postgres container (default in a docker compose environment), then the postgres container also has to expose its port. The `sqlalchemy.url=` is then defined by `...@<CONTAINER_NAME>:<PORT>/<DATABASE>`.
+
+```sh
+# Create first revision
+uv run alembic revision -m "create symptom_category enum type"
+```
+
+Define the revision with `upgrade` and `downgrade` functionalities. In this case we define an Enum type for the symptom category and we drop it in case of a rollback.
+
+```sh
+# Apply revision
+uv run alembic upgrade head
+```
+
+#### Pack it into a container with docker run
+
+Create following Dockerfile.
+
+```Dockerfile
+FROM python:3.13-alpine AS migration
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+WORKDIR /app
+
+COPY pyproject.toml .
+COPY uv.lock .
+
+RUN uv sync --frozen --group migration
+
+COPY migrations migrations
+COPY alembic.ini .
+
+ENTRYPOINT ["uv", "run", "alembic"]
+# ENTRYPOINT cannot be overwritten but you can extend
+CMD ["upgrade", "head"]
+# CMD will be completely overwritten (in this case CMD is like a default value)
+```
+
+```sh
+# Build image
+docker build -t migration-img -f Dockerfile.migration .
+
+# Run container
+# [IMPORTANT] Make sure postgres container is running inside the same network
+# micronutrients_default is the network which is created automatically by docker-compose when environment is started
+docker run --rm --name migration -e DATABASE_URL="postgresql+psycopg://user:pw@postgresdb:5432/pdb" --network micronutrients_default migration-img
+```
+
+#### Use docker compose
+
+```sh
+# Start docker compose environment
+# [IMPORTANT] Remove --build flag if you do not want to rebuild the images but instead use already existing ones
+# If you changed your dockerfile or source code then you want to use --build flag
+docker-compose -f .\docker-compose.yml   up --build -d
+# Stop docker compose environment
+docker-compose -f .\docker-compose.yml down -v
+```
