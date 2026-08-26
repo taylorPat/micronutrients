@@ -29,7 +29,7 @@ target_metadata = None
 
 database_url = os.getenv("DATABASE_URL")
 if database_url is None:
-    raise ValueError("DATABASE_URL is not defined"!)
+    raise ValueError("DATABASE_URL is not defined!")
 config.set_main_option("sqlalchemy.url", database_url)
 
 
