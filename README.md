@@ -129,3 +129,52 @@ CREATE TABLE food_consists_of_nutrient (
     CHECK (food_amount > 0)
 );
 ```
+
+## Docker environment
+
+### PostgreSQL
+
+We use docker / docker-compose to set up the PostgreSQL database. The container runs with the latest `postgres:18.6` version.
+
+> [!NOTE]
+> For interacting with the database in the beginning we use [`adminer`](https://www.adminer.org/de/) as postgres client. The reason for this is that is also used on the offical postgres docker documentation. As alternative we could have also used [`pgadmin`](https://www.pgadmin.org/).
+
+> [!NOTE]
+> A network let your containers securly talk to each other.  
+> How to find the name of the network? Per default it is called `<Docker-compose-projectname>_default`:
+>
+> - `docker network ls`
+> - `docker compose config` shows the optimized docker-compose.yml file.
+> - `docker inspect postgres` search for `networks`
+
+#### Connect services with network
+
+```sh
+# Define a network and connect both services to this network
+docker network create net_tes
+# Start postgres container
+docker run --name db_tes -e POSTGRES_PASSWORD=pw -d --rm --network net_tes postgres:18.6
+# Start adminer and expose port 8080 to interact with UI from outside the container
+docker run --name admini -d --rm --network net_tes -p 8080:8080 adminer
+# [Adminer UI][Server] = "db_tes" # container name of postgres instance
+```
+
+#### Connect services without network
+
+```
+# Start postgres container and export port 5433
+docker run --name db_tes -e POSTGRES_PASSWORD=pw -d --rm -p 5433:5432 postgres:18.6
+# Start adminer and expose port 8080 to interact with UI from outside the container
+docker run --name admini -d --rm -p 8080:8080 adminer
+# [Adminer UI][Server] = "host.docker.internal:5433"
+```
+
+> [!NOTE]
+> Use a _Named Volume_ instead of a _Bind mount_. When using _Named Volume_:
+>
+> - Docker cares about the persisting
+> - less issues with windows / linux file permissions
+> - No dependency on specific file paths
+
+> [!NOTE]
+> The docker compose file can be checked [here](docker-compose.yml) or inside the src directory via `docker compose config`.
