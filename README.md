@@ -1,4 +1,4 @@
-TODO: Write down all migration files with alembic and apply
+TODO: Write down migration scripts `food_consists_of_nutrients` with alembic and apply
 
 # [IN PROGRESS] Micronutrients 🥦📊🧬
 
@@ -118,10 +118,10 @@ CREATE TYPE food_unit AS ENUM ('g', 'kg', 'ml', 'l', 'piece', 'portion');
 CREATE TABLE food_consists_of_nutrient (
     food_id UUID NOT NULL,
     micronutrient_id UUID NOT NULL,
-    nutrient_amount DECIMAL(10,3), -- this and following attributes can be null
-    nutrient_unit nutrient_unit,
-    food_amount DECIMAL(10,3),
-    food_unit food_unit,
+    nutrient_amount DECIMAL(10,3) NOT NULL, -- this and following attributes must not be null
+    nutrient_unit nutrient_unit NOT NULL,
+    food_amount DECIMAL(10,3) NOT NULL,
+    food_unit food_unit NOT NULL,
 
     PRIMARY KEY (food_id, micronutrient_id),
     FOREIGN KEY (food_id) REFERENCES food(id),
@@ -200,7 +200,8 @@ Inside _alembic.ini_ set `sqlalchemy.url=`. Set the database URL as environment 
 
 > [!IMPORTANT]
 > When you run the migration scripts in a virtual environment locally and your postgres instance is running inside a container, the container has to expose the port. The `sqlalchemy.url=` is then defined by `...@localhost:<PORT>/<DATABASE>`.
-> When you run the migration script in a container and in the same network as postgres container (default in a docker compose environment), then the postgres container also has to expose its port. The `sqlalchemy.url=` is then defined by `...@<CONTAINER_NAME>:<PORT>/<DATABASE>`.
+> When you run the migration script in a container and in the same network as postgres container (default in a docker compose environment), then the postgres container does not have to expose its port. The `sqlalchemy.url=` is then defined by `...@<CONTAINER_NAME>:<PORT>/<DATABASE>`.
+> On Windows and MacOs when you run both containers but without a network then `sqlalchemy.url=` is then defined by `...@host.docker.internal:<PORT>/<DATABASE>`.
 
 ```sh
 # Create first revision
@@ -226,14 +227,14 @@ WORKDIR /app
 
 COPY pyproject.toml .
 COPY uv.lock .
+COPY alembic.ini .
 
 RUN uv sync --frozen --group migration
 
 COPY migrations migrations
-COPY alembic.ini .
 
 ENTRYPOINT ["uv", "run", "alembic"]
-# ENTRYPOINT cannot be overwritten but you can extend
+# ENTRYPOINT cannot be overwritten from the command line but you can extend it from there
 CMD ["upgrade", "head"]
 # CMD will be completely overwritten (in this case CMD is like a default value)
 ```
@@ -249,6 +250,13 @@ docker run --rm --name migration -e DATABASE_URL="postgresql+psycopg://user:pw@p
 ```
 
 #### Use docker compose
+
+Add a new service for the db schema migration to docker-compose.yml file. It needs to fulfill following requirements:
+
+- Only run once and stop after the migration scripts are applied
+- Build the image based on `Dockerfile.migration`
+- Set the `DATABASE_URL` to connect with the db inside the already running postgresql container
+- Is only allowed to run when postgresql container is healthy
 
 ```sh
 # Start docker compose environment

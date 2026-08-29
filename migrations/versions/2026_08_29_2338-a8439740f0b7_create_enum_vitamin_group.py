@@ -1,8 +1,8 @@
-"""create symptom_category enum type
+"""create type vitamin group
 
-Revision ID: a0ca03671bf6
-Revises: 
-Create Date: 2026-08-23 21:54:52.993133
+Revision ID: a8439740f0b7
+Revises: 7733e703c21e
+Create Date: 2026-08-29 23:38:05.227440
 
 """
 from typing import Sequence, Union
@@ -12,17 +12,17 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'a0ca03671bf6'
-down_revision: Union[str, Sequence[str], None] = None
+revision: str = 'a8439740f0b7'
+down_revision: Union[str, Sequence[str], None] = '7733e703c21e'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
     """Upgrade schema."""
-    op.execute("CREATE TYPE symptom_category AS ENUM ('outer', 'inner')")
+    op.execute("CREATE TYPE vitamin_group AS ENUM ('A', 'B', 'C', 'D', 'E', 'K')")
 
 
 def downgrade() -> None:
     """Downgrade schema."""
-    op.execute("DROP TYPE symptom_category")
+    op.execute("DROP TYPE vitamin_group")

@@ -21,8 +21,17 @@ services:
   # [Docker]: docker run --name postgresdb_drun -e POSTGRES_PASSWORD=pw -d -p 5433:5432 -v ./db-data:/var/lib/postgresql --rm  postgres:18.6
 
   db-migration:
+    # In order to leave out db-migration service when starting docker-compose environment from cli
+    # Instead build and run image via docker build / run because it is more flexible for testing
+    # different alembic commands and you dont have to change db-migration.command
+    # docker build -f .\Dockerfile.migration --tag migration-run .
+    # docker run --name migration-run-con -e DATABASE_URL="postgresql+psycopg://user:pw@postgresdb:5432/pdb" --network micronutrients_default --rm  migration-run
+    # docker run --name migration-run-con -e DATABASE_URL="postgresql+psycopg://user:pw@postgresdb:5432/pdb" --network micronutrients_default --rm  migration-run downgrade base
+    profiles:
+      - migration
     container_name: migration
     restart: "no"
+    command: ["upgrade", "head"]
     build:
       context: .
       dockerfile: Dockerfile.migration
@@ -42,7 +51,7 @@ services:
       db:
         condition: "service_healthy" # only start dbclient when postgresdb is healthy / ready to accept traffic
   # [Docker]: docker run --name adminer_client -d -p 8081:8080 --rm adminer
-  # [localhost:8081] Server: host.docker.internal
+  # [localhost:8081] Server: `host.docker.internal` or run adminer and postgres container in same network then Server: `<POSTGRES_CONTAINER_NAME>`
 
 volumes:
   pg_data: # if you dont specific this you get `service "db" refers to undefined volume pg_data ...`
