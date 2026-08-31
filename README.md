@@ -1,4 +1,7 @@
-TODO: Write down migration scripts `food_consists_of_nutrients` with alembic and apply
+TODO:
+
+- Instll SQLAlchemy in dependencies = [].
+- For Vitamins create Table objects and sync db service with insert functionality
 
 # [IN PROGRESS] Micronutrients 🥦📊🧬
 
@@ -208,11 +211,16 @@ Inside _alembic.ini_ set `sqlalchemy.url=`. Set the database URL as environment 
 uv run alembic revision -m "create symptom_category enum type"
 ```
 
+> [!NOTE]
+> In order to have ordered migration scripts comment in line 14 in _alembic.ini_ file. This prefixes every revison file name with the creation datetime when created with `alembic revison -m ...`.
+
 Define the revision with `upgrade` and `downgrade` functionalities. In this case we define an Enum type for the symptom category and we drop it in case of a rollback.
 
 ```sh
-# Apply revision
+# Apply all revisions
 uv run alembic upgrade head
+# Unapply all revisions
+uv run alembic downgrade base
 ```
 
 #### Pack it into a container with docker run
