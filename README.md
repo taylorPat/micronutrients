@@ -1,7 +1,7 @@
 TODO:
 
-- Instll SQLAlchemy in dependencies = [].
-- For Vitamins create Table objects and sync db service with insert functionality
+- Add get funcionality
+- Add develop service to docker compose + create Dockerfile
 
 # [IN PROGRESS] Micronutrients 🥦📊🧬
 
@@ -274,3 +274,14 @@ docker-compose -f .\docker-compose.yml   up --build -d
 # Stop docker compose environment
 docker-compose -f .\docker-compose.yml down -v
 ```
+
+### SQLAlchemy
+
+For a first run we run the script for inserting vitamins locally. This means the postgresql container has to expose port and the script has to define the right database url.
+
+Run the script with `uv run -m src.services.db.sql_service`.
+
+For now and because of time limitations we only implement the micronutrient and vitamin tables. When we think back to the database schema definition, we can remember that vitamin is a specialication of micronutrient like a parent child relationship. vitamin inherits from micronutrient and the primary key of vitamin is at the same time the foreign key which refers to micronutrient.id.
+
+In order to apply this approach via SQLAlchemy we make use of Joined Table Inheritance. SQLAlchemy manages the shared primary key / foreign key relationship.  
+When inserting data into a child class, you only instantiate the child class and pass all attributes (both inherited parent attributes and child-specific attributes) directly into it. You do not need to create a separate parent instance or manually link IDs.

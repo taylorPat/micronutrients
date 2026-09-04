@@ -28,7 +28,7 @@ def upgrade() -> None:
     op.create_table(
         "micronutrient",
         sa.Column("id", sa.UUID, primary_key=True, nullable=False),
-        sa.Column("name", sa.VARCHAR(50), nullable=False),
+        sa.Column("name", sa.VARCHAR(50), nullable=False, unique=True),
         sa.Column("recommended_daily_amount", sa.DECIMAL(precision=10, scale=3)),
         sa.Column("unit", nutrient_unit, nullable=False),
         sa.CheckConstraint("""
