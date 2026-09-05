@@ -1,0 +1,13 @@
+FROM python:3.13-alpine AS base
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+WORKDIR /app
+
+# Copy of folders does not work with `src/ .`. This would unpack the content of src/ into . 
+COPY src/ src/ 
+COPY pyproject.toml .
+COPY uv.lock .
+
+RUN uv sync --frozen
+
+CMD ["uv", "run", "-m", "src.services.db.sql_service"]
