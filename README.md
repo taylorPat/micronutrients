@@ -1,7 +1,7 @@
 TODO:
 
-- Add get funcionality
-- Add develop service to docker compose + create Dockerfile
+- Add delete funcionality
+- Add develop service to docker compose
 
 # [IN PROGRESS] Micronutrients 🥦📊🧬
 
