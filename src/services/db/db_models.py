@@ -47,3 +47,6 @@ class Vitamin(Micronutrient):
     )
 
     __mapper_args__: typing.ClassVar = {"polymorphic_identity": "vitamin"}
+
+    def __repr__(self):
+        return f"{self.id}, {self.micronutrient_id}, {self.name}"
